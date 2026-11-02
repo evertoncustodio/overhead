@@ -1,0 +1,9 @@
+<resources>
+    <style name="Theme.Overhead" parent="android:Theme.Material.NoActionBar">
+        <item name="android:colorPrimary">@color/planet</item>
+        <item name="android:colorAccent">@color/planet_day</item>
+        <item name="android:windowBackground">@color/space</item>
+        <item name="android:statusBarColor">@color/space</item>
+        <item name="android:navigationBarColor">@color/space</item>
+    </style>
+</resources>

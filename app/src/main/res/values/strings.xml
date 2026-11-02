@@ -1,0 +1,42 @@
+<resources>
+    <string name="app_name">Overhead</string>
+    <string name="wallpaper_description">The Earth seen from space, centered where you are.</string>
+    <string name="tagline">The Earth seen from space, centered where you are.</string>
+
+    <string name="centered_on">Centered on</string>
+    <string name="source_guess">A guess from your time zone. Use your location or choose a place.</string>
+    <string name="source_device">Follows this phone\'s approximate location.</string>
+    <string name="source_manual">Chosen by you.</string>
+    <string name="use_my_location">Use my location</string>
+    <string name="choose_place">Choose a place</string>
+    <string name="show_marker">Mark the place with a dot</string>
+
+    <string name="finding_location">Finding your location…</string>
+    <string name="location_failed">Couldn\'t get a location right now. GPS often can\'t find one indoors: try near a window, or choose a place.</string>
+    <string name="location_off">Location is turned off on this phone. Turn it on in quick settings, or choose a place.</string>
+    <string name="permission_denied">Without location access, Overhead can\'t follow you. You can still choose a place.</string>
+    <string name="permission_blocked">Location access is blocked for Overhead. You can allow it in the app\'s settings.</string>
+    <string name="open_settings">Open settings</string>
+
+    <string name="choose_place_hint">City name, or latitude, longitude</string>
+    <string name="search">Search</string>
+    <string name="searching">Searching…</string>
+    <string name="no_places_found">No places found for “%1$s”.</string>
+    <string name="pick_a_place">Which one?</string>
+
+    <string name="globe_size">Globe size</string>
+    <string name="home_zoom">Home screen: %1$d%%</string>
+    <string name="lock_zoom">Lock screen: %1$d%%</string>
+    <string name="preview_home">Preview: home screen</string>
+    <string name="preview_lock">Preview: lock screen</string>
+
+    <string name="clouds_waiting">Live clouds will appear after the first download.</string>
+    <string name="clouds_updated">Clouds updated %1$s</string>
+    <string name="clouds_updated_now">Clouds updated just now</string>
+
+    <string name="status_active">Overhead is your current wallpaper.</string>
+    <string name="status_inactive">Overhead is not your wallpaper yet.</string>
+    <string name="set_wallpaper">Set as wallpaper</string>
+
+    <string name="credits">Imagery: NASA Blue Marble and Black Marble.\nClouds: Live Cloud Maps by Matt Eason. Contains modified EUMETSAT data.</string>
+</resources>

@@ -1,0 +1,8 @@
+<resources>
+    <color name="space">#050814</color>
+    <color name="planet">#1E5AAA</color>
+    <color name="planet_day">#3D8BFF</color>
+    <color name="planet_night">#13294F</color>
+    <color name="text_primary">#F2F5FA</color>
+    <color name="text_secondary">#A8B3C7</color>
+</resources>
