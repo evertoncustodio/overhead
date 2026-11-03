@@ -13,7 +13,7 @@ uniform mat3 uViewToEarth;         // rotates view space into Earth-fixed coordi
 uniform vec3 uSunDirection;        // unit vector toward the sun, Earth-fixed coordinates
 uniform sampler2D uDayTexture;
 uniform sampler2D uNightTexture;
-uniform sampler2D uOceanMask;      // 1 over water, 0 over land
+uniform sampler2D uTerrain;        // r: 1 over water, 0 over land; g, b: land slope east, north
 uniform sampler2D uClouds;         // greyscale cloud map: black is clear sky, white thick cloud
 uniform float uHasClouds;          // 0 until the first cloud map has been downloaded
 uniform vec4 uMarker;              // the centered place's dot: screen x, y, radius, strength (0 = hidden)
@@ -47,6 +47,12 @@ const float SUN_ANGULAR_RADIUS = 0.0047;  // radians: the real sun is about half
 
 // Clouds float about 10 km up; exaggerated here so their shadows are visible from space.
 const float CLOUD_SHADOW_OFFSET = 0.004;
+
+// Land relief. Slopes averaged over a texel (about 20 km) are only a few percent, too gentle
+// to see from space, so they are steepened. MAX_SLOPE must match SLOPE_SCALE in
+// tools/terrain_map.py, which stores the slopes square-root encoded.
+const float MAX_SLOPE = 0.1;
+const float RELIEF_EXAGGERATION = 20.0;
 
 // A pseudo-random number in 0..1 that is always the same for the same input. Uses only
 // multiplications ("hash without sine" by Dave Hoskins), which is cheaper than sin() per pixel.
@@ -131,7 +137,10 @@ vec3 shadeSurface(vec3 normal, vec3 earthNormal, vec3 rayDir, float footprint) {
     float cloudLod = mipLevel(uClouds, footprint, cosLatitude);
     vec3 dayColor = textureLod(uDayTexture, uv, surfaceLod).rgb;
     vec3 cityLights = textureLod(uNightTexture, uv, surfaceLod).rgb;
-    float ocean = textureLod(uOceanMask, uv, mipLevel(uOceanMask, footprint, cosLatitude)).r;
+    vec3 terrain = textureLod(uTerrain, uv, mipLevel(uTerrain, footprint, cosLatitude)).rgb;
+    float ocean = terrain.r;
+    vec2 slope = terrain.gb * 2.0 - 1.0;
+    slope *= abs(slope) * (MAX_SLOPE * RELIEF_EXAGGERATION);
     float cloud = cloudCover(uv, cloudLod);
 
     float sunCos = dot(earthNormal, uSunDirection);
@@ -143,25 +152,36 @@ vec3 shadeSurface(vec3 normal, vec3 earthNormal, vec3 rayDir, float footprint) {
     // shifted 3D point back with atan/asin), and read a blurrier mipmap: shadows are soft.
     vec3 east = vec3(earthNormal.z, 0.0, -earthNormal.x);  // points east; length is cos(latitude)
     float cosLatitudeSq = max(dot(east, east), 1e-3);
+    float invCosLatitude = inversesqrt(cosLatitudeSq);
     vec3 north = vec3(-earthNormal.y * earthNormal.x, 1.0 - earthNormal.y * earthNormal.y,
-                      -earthNormal.y * earthNormal.z) / sqrt(cosLatitudeSq);  // unit length
+                      -earthNormal.y * earthNormal.z) * invCosLatitude;  // unit length
     float shift = CLOUD_SHADOW_OFFSET / max(sunCos, 0.2);
     vec2 shadowUv = uv + shift * vec2(dot(uSunDirection, east) / (2.0 * PI * cosLatitudeSq),
                                       -dot(uSunDirection, north) / PI);
     float shadow = cloudCover(shadowUv, cloudLod + 2.0);  // two levels blurrier
 
+    // The ground tilts with the land's slopes, so mountainsides facing the sun are brighter and
+    // stay lit a little past the terminator, while those facing away darken early. Clouds,
+    // city lights and the haze keep the smooth sphere's lighting.
+    vec3 ground = normalize(earthNormal - slope.x * invCosLatitude * east - slope.y * north);
+    float groundSunCos = dot(ground, uSunDirection);
+    float groundLight = daylight(groundSunCos);
+
     // Day side: the texture lit by the sun, a little warmer and dimmer near the terminator.
     float twilight = light * (1.0 - light) * 4.0;  // peaks halfway through twilight
     vec3 sunTint = mix(vec3(1.0), TWILIGHT_COLOR, 0.35 * twilight);
     float sunlight = 0.15 + 0.85 * max(sunCos, 0.0);
-    vec3 sunlit = dayColor * sunlight * sunTint * (1.0 - 0.45 * shadow);
+    float groundTwilight = groundLight * (1.0 - groundLight) * 4.0;
+    vec3 groundTint = mix(vec3(1.0), TWILIGHT_COLOR, 0.35 * groundTwilight);
+    float groundSunlight = 0.15 + 0.85 * max(groundSunCos, 0.0);
+    vec3 sunlit = dayColor * groundSunlight * groundTint * (1.0 - 0.45 * shadow);
 
     // Night side: faint moonlit ground plus city lights, which fade in as the sun sets
     // and glow dimly through clouds.
     float darkness = smoothstep(0.05, -0.15, sunCos);
     vec3 night = dayColor * MOONLIGHT * 2.5 + cityLights * CITY_LIGHT_TINT * darkness * (1.0 - 0.7 * cloud);
 
-    vec3 surface = mix(night, sunlit, light);
+    vec3 surface = mix(night, sunlit, groundLight);
 
     // Sunlight reflecting off the water, toward the camera: a bright core and a soft halo,
     // stronger at grazing angles like real water (the Fresnel effect).

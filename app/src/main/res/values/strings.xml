@@ -40,5 +40,5 @@
     <string name="status_inactive">Overhead is not your wallpaper yet.</string>
     <string name="set_wallpaper">Set as wallpaper</string>
 
-    <string name="credits">Imagery: NASA Blue Marble and Black Marble.\nClouds: Live Cloud Maps by Matt Eason. Contains modified EUMETSAT data.\nSky: NASA/Goddard Space Flight Center Scientific Visualization Studio, with Gaia DR2 data (ESA/Gaia/DPAC).</string>
+    <string name="credits">Imagery: NASA Blue Marble and Black Marble.\nElevation: NOAA ETOPO5.\nClouds: Live Cloud Maps by Matt Eason. Contains modified EUMETSAT data.\nSky: NASA/Goddard Space Flight Center Scientific Visualization Studio, with Gaia DR2 data (ESA/Gaia/DPAC).</string>
 </resources>

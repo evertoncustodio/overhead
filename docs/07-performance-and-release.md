@@ -62,6 +62,10 @@ same development key, so it installs over 0.1.0 as an update.
 `dist/Overhead-0.3.0.apk` (version code 3, 6.1 MB) adds the [Milky Way](10-milky-way.md).
 The sky's six images make it 1.6 MB bigger. Same development key, so it installs over 0.2.0.
 
+`dist/Overhead-0.4.0.apk` (version code 4, 7.1 MB) adds [terrain relief](11-terrain-relief.md).
+The slopes in `terrain.png` make it about 1 MB bigger. Same development key, so it installs
+over 0.3.0.
+
 ## To do
 
 1. **Battery check.**
@@ -72,7 +76,9 @@ The sky's six images make it 1.6 MB bigger. Same development key, so it installs
 2. **A smaller release APK.**
    - Turn on code shrinking (R8).
    - Store the day and night images as ETC2-compressed textures, and the single-channel maps
-     as `R8`, to cut GPU memory from about 45 MB of uncompressed textures.
+     as `R8`, to cut GPU memory from about 45 MB of uncompressed textures. The ocean mask is
+     now part of the three-channel `terrain.png` ([11-terrain-relief.md](11-terrain-relief.md)),
+     so only the clouds stay single-channel.
    - The sky's cube map ([10-milky-way.md](10-milky-way.md)) adds about 33 MB more: six
      1024×1024 faces stored as RGBA, plus mipmaps. ETC2 would cut that too.
    - ~~The day/night images only need 2048×1024~~: dropped. At the default zoom the 4096-wide

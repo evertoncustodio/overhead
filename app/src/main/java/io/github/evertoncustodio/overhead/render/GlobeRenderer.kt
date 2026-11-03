@@ -59,7 +59,7 @@ class GlobeRenderer(
     private var program = 0
     private var dayTexture = 0
     private var nightTexture = 0
-    private var oceanMask = 0
+    private var terrain = 0
     private var clouds = 0
     private var sky = 0
     private var width = 1
@@ -78,7 +78,7 @@ class GlobeRenderer(
     private var uSunDirection = 0
     private var uDayTexture = 0
     private var uNightTexture = 0
-    private var uOceanMask = 0
+    private var uTerrain = 0
     private var uClouds = 0
     private var uHasClouds = 0
     private var uMarker = 0
@@ -95,7 +95,7 @@ class GlobeRenderer(
         program = GlUtils.createProgram(assets, "shaders/globe.vert", "shaders/globe.frag")
         dayTexture = GlUtils.loadTexture(assets, "textures/earth_day.jpg")
         nightTexture = GlUtils.loadTexture(assets, "textures/earth_night.jpg")
-        oceanMask = GlUtils.loadTexture(assets, "textures/ocean_mask.png")
+        terrain = GlUtils.loadTexture(assets, "textures/terrain.png")
         clouds = GlUtils.loadTextureOrNone(cloudFile)
         sky = GlUtils.loadCubeMap(assets, SKY_FACES.map { "textures/sky_$it.jpg" })
 
@@ -106,7 +106,7 @@ class GlobeRenderer(
         uSunDirection = GLES30.glGetUniformLocation(program, "uSunDirection")
         uDayTexture = GLES30.glGetUniformLocation(program, "uDayTexture")
         uNightTexture = GLES30.glGetUniformLocation(program, "uNightTexture")
-        uOceanMask = GLES30.glGetUniformLocation(program, "uOceanMask")
+        uTerrain = GLES30.glGetUniformLocation(program, "uTerrain")
         uClouds = GLES30.glGetUniformLocation(program, "uClouds")
         uHasClouds = GLES30.glGetUniformLocation(program, "uHasClouds")
         uMarker = GLES30.glGetUniformLocation(program, "uMarker")
@@ -184,8 +184,8 @@ class GlobeRenderer(
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, nightTexture)
         GLES30.glUniform1i(uNightTexture, 1)
         GLES30.glActiveTexture(GLES30.GL_TEXTURE2)
-        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, oceanMask)
-        GLES30.glUniform1i(uOceanMask, 2)
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, terrain)
+        GLES30.glUniform1i(uTerrain, 2)
         GLES30.glActiveTexture(GLES30.GL_TEXTURE3)
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, clouds)
         GLES30.glUniform1i(uClouds, 3)

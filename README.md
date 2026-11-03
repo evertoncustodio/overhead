@@ -20,6 +20,8 @@ is an independent project with no connection to Google.
 - **The sun in space,** in its real direction: soft light from the screen edge, or rising over
   the planet's edge around midnight.
 - **Ocean glint** where sunlight reflects off the water.
+- **Terrain relief:** mountainsides facing the sun are brighter and those facing away darker,
+  strongest near sunrise and sunset, when ridges stay lit past the line between day and night.
 - **The Milky Way and the real stars** behind the planet, turned as the sky really is right
   now: behind the Earth is the sky above the other side of the world, so the Milky Way passes
   by part of the day. A setting turns the sky so it's always in view instead.
@@ -47,7 +49,7 @@ Overhead isn't on the Play Store. To install a shared APK:
 4. Open **Overhead**, tap **Use my location** or **Choose a place**, then **Set as wallpaper**
    and choose **Home screen and lock screen**.
 
-The current shared build (`dist/Overhead-0.3.0.apk`) is signed with a development key. Builds
+The current shared build (`dist/Overhead-0.4.0.apk`) is signed with a development key. Builds
 signed with the upcoming release key can't be installed over it: uninstall it first.
 
 ## Building
@@ -87,7 +89,7 @@ is a cube map turned by Earth's rotation angle, from [`Sky.kt`](app/src/main/jav
 app/src/main/
 ├─ assets/
 │  ├─ shaders/        globe.vert, globe.frag
-│  └─ textures/       earth_day.jpg, earth_night.jpg, ocean_mask.png,
+│  └─ textures/       earth_day.jpg, earth_night.jpg, terrain.png,
 │                     sky_*.jpg (the six faces of the sky's cube map)
 └─ java/io/github/evertoncustodio/overhead/
    ├─ MainActivity.kt                 settings screen
@@ -124,6 +126,8 @@ including the problems found along the way.
 - Earth imagery: NASA **Blue Marble Next Generation** (day) and **Black Marble 2012** (city
   lights), obtained through NASA's GIBS service. Public domain.
 - Land/water mask: **OpenStreetMap** data via NASA GIBS. © OpenStreetMap contributors (ODbL).
+- Elevation: NOAA's **ETOPO5** global relief. Public domain. Combined with the land/water mask
+  by [`tools/terrain_map.py`](tools/terrain_map.py).
 - Clouds: **Live Cloud Maps** by Matt Eason (CC0). Contains modified EUMETSAT data.
 - Sky: NASA's **Deep Star Maps 2020**, NASA/Goddard Space Flight Center Scientific
   Visualization Studio, with Gaia DR2 data (ESA/Gaia/DPAC). Converted to a cube map by
@@ -138,7 +142,7 @@ their own terms, listed under Credits.
 
 ## Status
 
-Version 0.3.0: adds the [Milky Way](docs/10-milky-way.md) and the real stars behind the
-planet. Version 0.2.0, shared with a few testers before it, added the location dot and
-adjustable globe sizes.
+Version 0.4.0: adds [terrain relief](docs/11-terrain-relief.md) on land. Version 0.3.0 added
+the [Milky Way](docs/10-milky-way.md) and the real stars behind the planet, and 0.2.0 added
+the location dot and adjustable globe sizes.
 Remaining work is listed in [milestone 7](docs/07-performance-and-release.md).
