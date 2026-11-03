@@ -59,6 +59,9 @@ key, shared with one tester. A release-key build can't be installed over it: uni
 [location dot](08-location-marker.md) and [globe size](09-globe-size.md) features. It uses the
 same development key, so it installs over 0.1.0 as an update.
 
+`dist/Overhead-0.3.0.apk` (version code 3, 6.1 MB) adds the [Milky Way](10-milky-way.md).
+The sky's six images make it 1.6 MB bigger. Same development key, so it installs over 0.2.0.
+
 ## To do
 
 1. **Battery check.**
@@ -70,6 +73,8 @@ same development key, so it installs over 0.1.0 as an update.
    - Turn on code shrinking (R8).
    - Store the day and night images as ETC2-compressed textures, and the single-channel maps
      as `R8`, to cut GPU memory from about 45 MB of uncompressed textures.
+   - The sky's cube map ([10-milky-way.md](10-milky-way.md)) adds about 33 MB more: six
+     1024×1024 faces stored as RGBA, plus mipmaps. ETC2 would cut that too.
    - ~~The day/night images only need 2048×1024~~: dropped. At the default zoom the 4096-wide
      top mipmap level is never read, but the adjustable globe size (up to 200%, see
      [09-globe-size.md](09-globe-size.md)) needs it.

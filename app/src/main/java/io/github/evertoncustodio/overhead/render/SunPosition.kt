@@ -29,11 +29,19 @@ object SunPosition {
         val declination = asin(sin(obliquity) * sin(eclipticLongitude))
         val rightAscension = atan2(cos(obliquity) * sin(eclipticLongitude), cos(eclipticLongitude))
 
-        // Earth's rotation angle (Greenwich mean sidereal time) turns sky coordinates into a longitude.
-        val siderealTime = 280.46061837 + 360.98564736629 * n
-        val longitude = normalizeDegrees(Math.toDegrees(rightAscension) - siderealTime)
+        // Earth's rotation angle turns sky coordinates into a longitude.
+        val longitude = normalizeDegrees(Math.toDegrees(rightAscension) - siderealTime(epochMillis))
 
         return GeoPoint(latitude = Math.toDegrees(declination), longitude = longitude)
+    }
+
+    /**
+     * Earth's rotation angle against the stars (Greenwich mean sidereal time), in degrees, not
+     * wrapped: the right ascension overhead at longitude 0.
+     */
+    fun siderealTime(epochMillis: Long): Double {
+        val n = (epochMillis - J2000_EPOCH_MILLIS) / MILLIS_PER_DAY
+        return 280.46061837 + 360.98564736629 * n
     }
 
     /** Wraps an angle into -180..180 degrees. */

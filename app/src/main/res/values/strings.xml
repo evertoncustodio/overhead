@@ -29,6 +29,8 @@
     <string name="lock_zoom">Lock screen: %1$d%%</string>
     <string name="preview_home">Preview: home screen</string>
     <string name="preview_lock">Preview: lock screen</string>
+    <string name="keep_milky_way_in_view">Keep the Milky Way in view</string>
+    <string name="keep_milky_way_in_view_detail">Off: the real sky behind the Earth, where the Milky Way passes by part of the day. On: the sky is turned so it\'s always there.</string>
 
     <string name="clouds_waiting">Live clouds will appear after the first download.</string>
     <string name="clouds_updated">Clouds updated %1$s</string>
@@ -38,5 +40,5 @@
     <string name="status_inactive">Overhead is not your wallpaper yet.</string>
     <string name="set_wallpaper">Set as wallpaper</string>
 
-    <string name="credits">Imagery: NASA Blue Marble and Black Marble.\nClouds: Live Cloud Maps by Matt Eason. Contains modified EUMETSAT data.</string>
+    <string name="credits">Imagery: NASA Blue Marble and Black Marble.\nClouds: Live Cloud Maps by Matt Eason. Contains modified EUMETSAT data.\nSky: NASA/Goddard Space Flight Center Scientific Visualization Studio, with Gaia DR2 data (ESA/Gaia/DPAC).</string>
 </resources>

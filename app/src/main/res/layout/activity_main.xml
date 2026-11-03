@@ -170,6 +170,26 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp" />
 
+        <!-- Sky (shown in the same preview) -->
+        <Switch
+            android:id="@+id/keep_milky_way_in_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:switchPadding="12dp"
+            android:text="@string/keep_milky_way_in_view"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:text="@string/keep_milky_way_in_view_detail"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp" />
+
         <!-- Wallpaper -->
         <TextView
             android:id="@+id/status"

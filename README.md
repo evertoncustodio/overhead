@@ -19,7 +19,10 @@ is an independent project with no connection to Google.
   way round when the sun is behind the Earth.
 - **The sun in space,** in its real direction: soft light from the screen edge, or rising over
   the planet's edge around midnight.
-- **Ocean glint** where sunlight reflects off the water, and a faint starfield.
+- **Ocean glint** where sunlight reflects off the water.
+- **The Milky Way and the real stars** behind the planet, turned as the sky really is right
+  now: behind the Earth is the sky above the other side of the world, so the Milky Way passes
+  by part of the day. A setting turns the sky so it's always in view instead.
 - **Unlock animation:** the lock screen shows the planet from further away, and unlocking flies
   in toward your location.
 - **Adjustable globe size** for the home screen and the lock screen, from 60% to 200%, with a
@@ -44,7 +47,7 @@ Overhead isn't on the Play Store. To install a shared APK:
 4. Open **Overhead**, tap **Use my location** or **Choose a place**, then **Set as wallpaper**
    and choose **Home screen and lock screen**.
 
-The current shared build (`dist/Overhead-0.2.0.apk`) is signed with a development key. Builds
+The current shared build (`dist/Overhead-0.3.0.apk`) is signed with a development key. Builds
 signed with the upcoming release key can't be installed over it: uninstall it first.
 
 ## Building
@@ -77,13 +80,15 @@ The whole picture is drawn by one fragment shader, [`globe.frag`](app/src/main/a
 For each pixel it shoots a ray from the camera, finds where it hits the planet, and looks up
 that spot in equirectangular world maps. Lighting is done in Earth-fixed coordinates, using
 the sun's direction from [`SunPosition.kt`](app/src/main/java/io/github/evertoncustodio/overhead/render/SunPosition.kt).
-Pixels that miss the planet only draw space: stars, the atmosphere glow and the sun.
+Pixels that miss the planet only draw space: the sky, the atmosphere glow and the sun. The sky
+is a cube map turned by Earth's rotation angle, from [`Sky.kt`](app/src/main/java/io/github/evertoncustodio/overhead/render/Sky.kt).
 
 ```
 app/src/main/
 ├─ assets/
 │  ├─ shaders/        globe.vert, globe.frag
-│  └─ textures/       earth_day.jpg, earth_night.jpg, ocean_mask.png
+│  └─ textures/       earth_day.jpg, earth_night.jpg, ocean_mask.png,
+│                     sky_*.jpg (the six faces of the sky's cube map)
 └─ java/io/github/evertoncustodio/overhead/
    ├─ MainActivity.kt                 settings screen
    ├─ wallpaper/OverheadWallpaperService.kt
@@ -92,6 +97,7 @@ app/src/main/
    ├─ render/   GlobeRenderer.kt      OpenGL setup and drawing
    │            GeoPoint.kt           latitude/longitude and globe rotation
    │            SunPosition.kt        where the sun is overhead at a given time
+   │            Sky.kt                how the sky behind the globe is turned
    │            GlUtils.kt            shader and texture loading
    ├─ location/ LocationStore.kt      the saved place (rounded to ~11 km)
    │            DeviceLocation.kt     the phone's location, without Google Play services
@@ -119,6 +125,9 @@ including the problems found along the way.
   lights), obtained through NASA's GIBS service. Public domain.
 - Land/water mask: **OpenStreetMap** data via NASA GIBS. © OpenStreetMap contributors (ODbL).
 - Clouds: **Live Cloud Maps** by Matt Eason (CC0). Contains modified EUMETSAT data.
+- Sky: NASA's **Deep Star Maps 2020**, NASA/Goddard Space Flight Center Scientific
+  Visualization Studio, with Gaia DR2 data (ESA/Gaia/DPAC). Converted to a cube map by
+  [`tools/sky_cubemap.py`](tools/sky_cubemap.py).
 - Sun position: low-precision formulas from the Astronomical Almanac.
 - Star noise: "Hash without Sine" by Dave Hoskins.
 
@@ -129,5 +138,7 @@ their own terms, listed under Credits.
 
 ## Status
 
-Version 0.2.0, shared with a few testers: adds the location dot and adjustable globe sizes.
+Version 0.3.0: adds the [Milky Way](docs/10-milky-way.md) and the real stars behind the
+planet. Version 0.2.0, shared with a few testers before it, added the location dot and
+adjustable globe sizes.
 Remaining work is listed in [milestone 7](docs/07-performance-and-release.md).

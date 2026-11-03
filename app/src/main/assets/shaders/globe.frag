@@ -17,11 +17,18 @@ uniform sampler2D uOceanMask;      // 1 over water, 0 over land
 uniform sampler2D uClouds;         // greyscale cloud map: black is clear sky, white thick cloud
 uniform float uHasClouds;          // 0 until the first cloud map has been downloaded
 uniform vec4 uMarker;              // the centered place's dot: screen x, y, radius, strength (0 = hidden)
+uniform mat3 uViewToSky;           // rotates view space into sky coordinates (+Y celestial pole, +Z 0h)
+uniform samplerCube uSky;          // the Milky Way and stars around us
+uniform float uSkyLod;             // the sky's mipmap level, the same for every pixel
 
 out vec4 fragColor;
 
 const float PI = 3.14159265359;
 const vec3 SPACE_COLOR = vec3(0.02, 0.03, 0.08);
+
+// The sky map is stored brightened so its faint glow survives 8 bits; dim it back here. Kept
+// subtle: next to the sunlit planet, the real Milky Way would be far too faint to see.
+const float SKY_BRIGHTNESS = 0.45;
 
 // Atmosphere: drawn as a shell slightly bigger than the planet. The real one is much
 // thinner (about 1% of Earth's radius) but would be invisible at this distance.
@@ -177,7 +184,7 @@ vec3 shadeSurface(vec3 normal, vec3 earthNormal, vec3 rayDir, float footprint) {
     return mix(surface, ATMOSPHERE_COLOR * light, 0.6 * grazing * light);
 }
 
-// Everything around the planet: stars, the atmosphere glow and the sun.
+// Everything around the planet: the Milky Way and stars, the atmosphere glow and the sun.
 vec3 shadeSpace(vec3 rayOrigin, vec3 rayDir, float b, float closestSq, float h, vec3 sunView) {
     // How much air the ray passes through above the surface, as a 0..1 strength.
     float shellHalf = sqrt(max(ATMOSPHERE_RADIUS * ATMOSPHERE_RADIUS - closestSq, 0.0));
@@ -196,7 +203,8 @@ vec3 shadeSpace(vec3 rayOrigin, vec3 rayDir, float b, float closestSq, float h, 
     vec3 glow = airColor * clamp(airPath, 0.0, 1.0) * 0.9;
 
     // The planet hides the sun when it's behind it (this is mixed under the planet's edge).
-    return SPACE_COLOR + stars(gl_FragCoord.xy) + glow + sunDisk(rayDir, sunView);
+    vec3 sky = textureLod(uSky, uViewToSky * rayDir, uSkyLod).rgb * SKY_BRIGHTNESS;
+    return SPACE_COLOR + sky + stars(gl_FragCoord.xy) + glow + sunDisk(rayDir, sunView);
 }
 
 void main() {

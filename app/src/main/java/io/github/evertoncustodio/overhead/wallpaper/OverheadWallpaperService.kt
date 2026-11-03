@@ -40,6 +40,7 @@ class OverheadWallpaperService : WallpaperService() {
         private lateinit var store: LocationStore
         private lateinit var clouds: CloudStore
         private lateinit var zoom: ZoomStore
+        private lateinit var sky: SkyStore
         private val handler = Handler(Looper.getMainLooper())
 
         // Globe size for the screen showing (the home and lock sizes are chosen in the settings,
@@ -66,6 +67,11 @@ class OverheadWallpaperService : WallpaperService() {
         // A new size was chosen in the settings: show it on whichever screen is showing now.
         private val zoomChanged = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
             if (unlockAnimation?.isRunning != true) setScreenZoom(currentScreenZoom())
+        }
+
+        private val skyChanged = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+            renderer.keepMilkyWayInView = sky.keepMilkyWayInView
+            glView.requestRender()
         }
 
         // The sun moves a quarter of a degree per minute, so one frame a minute
@@ -96,13 +102,16 @@ class OverheadWallpaperService : WallpaperService() {
             store = LocationStore(this@OverheadWallpaperService)
             clouds = CloudStore(this@OverheadWallpaperService)
             zoom = ZoomStore(this@OverheadWallpaperService)
+            sky = SkyStore(this@OverheadWallpaperService)
             renderer = GlobeRenderer(assets, clouds.file).apply {
                 center = store.current().point
                 showMarker = store.showMarker
+                keepMilkyWayInView = sky.keepMilkyWayInView
             }
             store.registerListener(locationChanged)
             clouds.registerListener(cloudsChanged)
             zoom.registerListener(zoomChanged)
+            sky.registerListener(skyChanged)
             CloudUpdateJob.schedulePeriodic(this@OverheadWallpaperService)
 
             glView = WallpaperGLSurfaceView(this@OverheadWallpaperService).apply {
@@ -165,6 +174,7 @@ class OverheadWallpaperService : WallpaperService() {
             store.unregisterListener(locationChanged)
             clouds.unregisterListener(cloudsChanged)
             zoom.unregisterListener(zoomChanged)
+            sky.unregisterListener(skyChanged)
             if (!isPreview) unregisterReceiver(screenEvents)
             glView.release()
         }

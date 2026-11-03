@@ -30,15 +30,20 @@ import io.github.evertoncustodio.overhead.location.PlaceNames
 import io.github.evertoncustodio.overhead.render.GeoPoint
 import io.github.evertoncustodio.overhead.render.GlobeRenderer
 import io.github.evertoncustodio.overhead.wallpaper.OverheadWallpaperService
+import io.github.evertoncustodio.overhead.wallpaper.SkyStore
 import io.github.evertoncustodio.overhead.wallpaper.ZoomStore
 import kotlin.math.roundToInt
 
-/** Settings screen: where the globe is centered, how big it is, and a button to apply the wallpaper. */
+/**
+ * Settings screen: where the globe is centered, how big it is, how the sky is turned, and a
+ * button to apply the wallpaper.
+ */
 class MainActivity : Activity() {
 
     private lateinit var store: LocationStore
     private lateinit var clouds: CloudStore
     private lateinit var zoom: ZoomStore
+    private lateinit var sky: SkyStore
     private lateinit var preview: GLSurfaceView
     private lateinit var previewRenderer: GlobeRenderer
     private lateinit var previewCaption: TextView
@@ -65,6 +70,7 @@ class MainActivity : Activity() {
         store = LocationStore(this)
         clouds = CloudStore(this)
         zoom = ZoomStore(this)
+        sky = SkyStore(this)
         placeName = findViewById(R.id.place_name)
         placeCoordinates = findViewById(R.id.place_coordinates)
         placeSource = findViewById(R.id.place_source)
@@ -81,6 +87,14 @@ class MainActivity : Activity() {
         setUpPreview()
         setUpZoomSlider(R.id.home_zoom, R.id.home_zoom_label, R.string.home_zoom, lockScreen = false)
         setUpZoomSlider(R.id.lock_zoom, R.id.lock_zoom_label, R.string.lock_zoom, lockScreen = true)
+        findViewById<Switch>(R.id.keep_milky_way_in_view).apply {
+            isChecked = sky.keepMilkyWayInView
+            setOnCheckedChangeListener { _, checked ->
+                sky.keepMilkyWayInView = checked
+                previewRenderer.keepMilkyWayInView = checked
+                preview.requestRender()
+            }
+        }
 
         CloudUpdateJob.schedulePeriodic(this)
     }
@@ -143,6 +157,7 @@ class MainActivity : Activity() {
     private fun setUpPreview() {
         previewCaption = findViewById(R.id.preview_caption)
         previewRenderer = GlobeRenderer(assets, clouds.file)
+        previewRenderer.keepMilkyWayInView = sky.keepMilkyWayInView
         preview = findViewById<GLSurfaceView>(R.id.globe_preview).apply {
             setEGLContextClientVersion(3)
             setRenderer(previewRenderer)

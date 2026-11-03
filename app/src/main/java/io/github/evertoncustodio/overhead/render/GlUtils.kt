@@ -46,6 +46,28 @@ object GlUtils {
         return loadTexture(bitmap)
     }
 
+    /**
+     * Loads six square images from assets into a mipmapped cube map, in OpenGL's face order:
+     * +X, -X, +Y, -Y, +Z, -Z.
+     */
+    fun loadCubeMap(assets: AssetManager, paths: List<String>): Int {
+        val ids = IntArray(1)
+        GLES30.glGenTextures(1, ids, 0)
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_CUBE_MAP, ids[0])
+        paths.forEachIndexed { face, path ->
+            val bitmap = assets.open(path).use { BitmapFactory.decodeStream(it) }
+                ?: error("Could not decode $path")
+            GLUtils.texImage2D(GLES30.GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, bitmap, 0)
+            bitmap.recycle()
+        }
+        GLES30.glGenerateMipmap(GLES30.GL_TEXTURE_CUBE_MAP)
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_CUBE_MAP, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR_MIPMAP_LINEAR)
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_CUBE_MAP, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR)
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_CUBE_MAP, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE)
+        GLES30.glTexParameteri(GLES30.GL_TEXTURE_CUBE_MAP, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE)
+        return ids[0]
+    }
+
     fun deleteTexture(texture: Int) {
         if (texture != 0) GLES30.glDeleteTextures(1, intArrayOf(texture), 0)
     }
