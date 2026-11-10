@@ -45,6 +45,10 @@ class GlobeRenderer(
     @Volatile
     var zoom: Float = 1f
 
+    /** Progress of the screen-on animation (see [WakeAnimation]): 1 when settled. */
+    @Volatile
+    var wake: Float = 1f
+
     /**
      * Draw at reduced resolution and stretch it to the screen. Used during animations, where
      * the slight softness doesn't show, so slower phones can keep up a smooth frame rate.
@@ -85,6 +89,7 @@ class GlobeRenderer(
     private var uViewToSky = 0
     private var uSky = 0
     private var uSkyLod = 0
+    private var uWake = 0
 
     override fun onSurfaceCreated(unused: GL10?, config: EGLConfig?) {
         // A new GL context starts empty, so (re)create everything here.
@@ -113,6 +118,7 @@ class GlobeRenderer(
         uViewToSky = GLES30.glGetUniformLocation(program, "uViewToSky")
         uSky = GLES30.glGetUniformLocation(program, "uSky")
         uSkyLod = GLES30.glGetUniformLocation(program, "uSkyLod")
+        uWake = GLES30.glGetUniformLocation(program, "uWake")
     }
 
     /** Replaces the cloud texture with the newest file. Must run on the GL thread (queueEvent). */
@@ -196,10 +202,11 @@ class GlobeRenderer(
 
         GLES30.glUniform2f(uResolution, width.toFloat(), height.toFloat())
         GLES30.glUniform1f(uCameraDistance, CAMERA_DISTANCE)
-        val globeScreenRadius = GLOBE_SCREEN_RADIUS * zoom
+        val wake = wake
+        val globeScreenRadius = GLOBE_SCREEN_RADIUS * zoom * WakeAnimation.scale(wake)
         GLES30.glUniform1f(uGlobeScreenRadius, globeScreenRadius)
         val center = center  // read the volatile once, so the globe and the dot agree
-        val shown = center.copy(longitude = center.longitude + panDegrees)
+        val shown = center.copy(longitude = center.longitude + panDegrees + WakeAnimation.turnDegrees(wake))
         val viewToEarth = shown.viewToEarthMatrix()
         GLES30.glUniformMatrix3fv(uViewToEarth, 1, false, viewToEarth, 0)
         val now = clock()
@@ -214,6 +221,7 @@ class GlobeRenderer(
         // The dot shrinks with the globe on the lock screen, but less, so it stays easy to see.
         val markerRadius = MARKER_RADIUS * sqrt(zoom)
         GLES30.glUniform4f(uMarker, markerX, markerY, markerRadius, if (showMarker) markerVisibility else 0f)
+        GLES30.glUniform2f(uWake, WakeAnimation.brightness(wake), WakeAnimation.cityLights(wake))
         GLES30.glUniform3fv(uSunDirection, 1, SunPosition.subsolarPoint(now).toUnitVector(), 0)
 
         GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, 3)

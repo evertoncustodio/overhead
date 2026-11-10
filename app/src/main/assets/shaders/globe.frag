@@ -20,6 +20,7 @@ uniform vec4 uMarker;              // the centered place's dot: screen x, y, rad
 uniform mat3 uViewToSky;           // rotates view space into sky coordinates (+Y celestial pole, +Z 0h)
 uniform samplerCube uSky;          // the Milky Way and stars around us
 uniform float uSkyLod;             // the sky's mipmap level, the same for every pixel
+uniform vec2 uWake;                // screen-on animation: x planet brightness, y city lights 0..1
 
 out vec4 fragColor;
 
@@ -137,6 +138,12 @@ vec3 shadeSurface(vec3 normal, vec3 earthNormal, vec3 rayDir, float footprint) {
     float cloudLod = mipLevel(uClouds, footprint, cosLatitude);
     vec3 dayColor = textureLod(uDayTexture, uv, surfaceLod).rgb;
     vec3 cityLights = textureLod(uNightTexture, uv, surfaceLod).rgb;
+    // While the screen turns on, each patch of about 40 km switches its lights on at its own
+    // moment. The branch depends only on a uniform, so settled frames skip it entirely.
+    if (uWake.y < 1.0) {
+        float switchOn = hash(floor(uv * vec2(1024.0, 512.0)));
+        cityLights *= clamp((uWake.y - 0.6 * switchOn) * 5.0, 0.0, 1.0);
+    }
     vec3 terrain = textureLod(uTerrain, uv, mipLevel(uTerrain, footprint, cosLatitude)).rgb;
     float ocean = terrain.r;
     vec2 slope = terrain.gb * 2.0 - 1.0;
@@ -201,7 +208,7 @@ vec3 shadeSurface(vec3 normal, vec3 earthNormal, vec3 rayDir, float footprint) {
 
     // Air seen at a grazing angle near the edge of the disk turns the day side hazy blue.
     float grazing = pow(1.0 - max(normal.z, 0.0), 3.0);
-    return mix(surface, ATMOSPHERE_COLOR * light, 0.6 * grazing * light);
+    return mix(surface, ATMOSPHERE_COLOR * light, 0.6 * grazing * light) * uWake.x;
 }
 
 // Everything around the planet: the Milky Way and stars, the atmosphere glow and the sun.
@@ -220,7 +227,7 @@ vec3 shadeSpace(vec3 rayOrigin, vec3 rayDir, float b, float closestSq, float h, 
     // the sun behind the planet the whole rim glows orange, like every sunset on Earth at once.
     float towardSunlight = pow(max(dot(rayDir, sunView), 0.0), 8.0);
     airColor += mix(TWILIGHT_COLOR, SUN_COLOR, 0.3) * towardSunlight * 1.5;
-    vec3 glow = airColor * clamp(airPath, 0.0, 1.0) * 0.9;
+    vec3 glow = airColor * clamp(airPath, 0.0, 1.0) * 0.9 * uWake.x;
 
     // The planet hides the sun when it's behind it (this is mixed under the planet's edge).
     vec3 sky = textureLod(uSky, uViewToSky * rayDir, uSkyLod).rgb * SKY_BRIGHTNESS;

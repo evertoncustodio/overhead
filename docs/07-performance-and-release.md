@@ -66,6 +66,9 @@ The sky's six images make it 1.6 MB bigger. Same development key, so it installs
 The slopes in `terrain.png` make it about 1 MB bigger. Same development key, so it installs
 over 0.3.0.
 
+`dist/Overhead-0.5.0.apk` (version code 5, 7.1 MB) adds the [screen-on animation](12-screen-on-animation.md).
+Same development key, so it installs over 0.4.0.
+
 ## To do
 
 1. **Battery check.**

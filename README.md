@@ -25,6 +25,9 @@ is an independent project with no connection to Google.
 - **The Milky Way and the real stars** behind the planet, turned as the sky really is right
   now: behind the Earth is the sky above the other side of the world, so the Milky Way passes
   by part of the day. A setting turns the sky so it's always in view instead.
+- **Screen-on animation:** as the screen turns on, the globe turns onto your location while
+  the sunlight comes up and city lights switch on, town by town. Can be turned off in the
+  settings.
 - **Unlock animation:** the lock screen shows the planet from further away, and unlocking flies
   in toward your location.
 - **Adjustable globe size** for the home screen and the lock screen, from 60% to 200%, with a
@@ -49,7 +52,7 @@ Overhead isn't on the Play Store. To install a shared APK:
 4. Open **Overhead**, tap **Use my location** or **Choose a place**, then **Set as wallpaper**
    and choose **Home screen and lock screen**.
 
-The current shared build (`dist/Overhead-0.4.0.apk`) is signed with a development key. Builds
+The current shared build (`dist/Overhead-0.5.0.apk`) is signed with a development key. Builds
 signed with the upcoming release key can't be installed over it: uninstall it first.
 
 ## Building
@@ -95,8 +98,9 @@ app/src/main/
    ├─ MainActivity.kt                 settings screen
    ├─ wallpaper/OverheadWallpaperService.kt
    │                                  the live wallpaper: GL thread, redraw timing,
-   │                                  lock/unlock animation, home screen swipes
+   │                                  screen-on and unlock animations, home screen swipes
    ├─ render/   GlobeRenderer.kt      OpenGL setup and drawing
+   │            WakeAnimation.kt      the screen-on animation's turn, size and lights
    │            GeoPoint.kt           latitude/longitude and globe rotation
    │            SunPosition.kt        where the sun is overhead at a given time
    │            Sky.kt                how the sky behind the globe is turned
@@ -142,7 +146,8 @@ their own terms, listed under Credits.
 
 ## Status
 
-Version 0.4.0: adds [terrain relief](docs/11-terrain-relief.md) on land. Version 0.3.0 added
-the [Milky Way](docs/10-milky-way.md) and the real stars behind the planet, and 0.2.0 added
-the location dot and adjustable globe sizes.
+Version 0.5.0: adds the [screen-on animation](docs/12-screen-on-animation.md). Version 0.4.0
+added [terrain relief](docs/11-terrain-relief.md) on land, 0.3.0 the
+[Milky Way](docs/10-milky-way.md) and the real stars behind the planet, and 0.2.0 the location
+dot and adjustable globe sizes.
 Remaining work is listed in [milestone 7](docs/07-performance-and-release.md).

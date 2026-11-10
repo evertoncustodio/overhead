@@ -30,13 +30,14 @@ import io.github.evertoncustodio.overhead.location.PlaceNames
 import io.github.evertoncustodio.overhead.render.GeoPoint
 import io.github.evertoncustodio.overhead.render.GlobeRenderer
 import io.github.evertoncustodio.overhead.wallpaper.OverheadWallpaperService
+import io.github.evertoncustodio.overhead.wallpaper.AnimationStore
 import io.github.evertoncustodio.overhead.wallpaper.SkyStore
 import io.github.evertoncustodio.overhead.wallpaper.ZoomStore
 import kotlin.math.roundToInt
 
 /**
- * Settings screen: where the globe is centered, how big it is, how the sky is turned, and a
- * button to apply the wallpaper.
+ * Settings screen: where the globe is centered, how big it is, how the sky is turned, whether
+ * it animates as the screen turns on, and a button to apply the wallpaper.
  */
 class MainActivity : Activity() {
 
@@ -94,6 +95,12 @@ class MainActivity : Activity() {
                 previewRenderer.keepMilkyWayInView = checked
                 preview.requestRender()
             }
+        }
+
+        findViewById<Switch>(R.id.screen_on_animation).apply {
+            val animations = AnimationStore(this@MainActivity)
+            isChecked = animations.screenOn
+            setOnCheckedChangeListener { _, checked -> animations.screenOn = checked }
         }
 
         CloudUpdateJob.schedulePeriodic(this)

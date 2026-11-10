@@ -13,6 +13,7 @@ import android.os.Looper
 import android.service.wallpaper.WallpaperService
 import android.view.SurfaceHolder
 import android.view.animation.DecelerateInterpolator
+import android.view.animation.LinearInterpolator
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
 import androidx.core.content.ContextCompat
@@ -41,6 +42,7 @@ class OverheadWallpaperService : WallpaperService() {
         private lateinit var clouds: CloudStore
         private lateinit var zoom: ZoomStore
         private lateinit var sky: SkyStore
+        private lateinit var animations: AnimationStore
         private val handler = Handler(Looper.getMainLooper())
 
         // Globe size for the screen showing (the home and lock sizes are chosen in the settings,
@@ -49,6 +51,15 @@ class OverheadWallpaperService : WallpaperService() {
         private var screenZoom = 1f
         private var launcherZoom = 0f
         private var unlockAnimation: ValueAnimator? = null
+
+        // The screen-on animation. Its first frame is set up while the screen is off, so the
+        // screen never shows the settled globe for a moment before it starts.
+        private var wakeAnimation: ValueAnimator? = null
+        private var wakePending = false
+
+        // Which animations are running, to draw lighter frames while any of them is.
+        private var unlocking = false
+        private var waking = false
 
         // Kept in a field: SharedPreferences only holds listeners weakly.
         private val locationChanged = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
@@ -90,7 +101,13 @@ class OverheadWallpaperService : WallpaperService() {
                     Intent.ACTION_SCREEN_OFF -> {
                         unlockAnimation?.cancel()
                         setScreenZoom(zoom.lock)
+                        wakeAnimation?.cancel()
+                        wakePending = animations.screenOn
+                        renderer.wake = if (wakePending) 0f else 1f
                     }
+                    // The wallpaper usually becomes visible as the screen turns on, which starts
+                    // the animation; this covers phones where it stays "visible" while off.
+                    Intent.ACTION_SCREEN_ON -> if (isVisible) startPendingWake()
                     // ...and fly to the home screen size when the phone is unlocked.
                     Intent.ACTION_USER_PRESENT -> animateUnlock()
                 }
@@ -103,6 +120,7 @@ class OverheadWallpaperService : WallpaperService() {
             clouds = CloudStore(this@OverheadWallpaperService)
             zoom = ZoomStore(this@OverheadWallpaperService)
             sky = SkyStore(this@OverheadWallpaperService)
+            animations = AnimationStore(this@OverheadWallpaperService)
             renderer = GlobeRenderer(assets, clouds.file).apply {
                 center = store.current().point
                 showMarker = store.showMarker
@@ -126,6 +144,7 @@ class OverheadWallpaperService : WallpaperService() {
             if (!isPreview) {
                 val filter = IntentFilter().apply {
                     addAction(Intent.ACTION_SCREEN_OFF)
+                    addAction(Intent.ACTION_SCREEN_ON)
                     addAction(Intent.ACTION_USER_PRESENT)
                 }
                 // Must be exported: USER_PRESENT comes from System UI, which counts as another app.
@@ -145,7 +164,10 @@ class OverheadWallpaperService : WallpaperService() {
                 if (unlockAnimation?.isRunning != true) setScreenZoom(currentScreenZoom())
                 glView.onResume()
                 redrawEveryMinute.run()
+                startPendingWake()
             } else {
+                // Hidden halfway (an app opened over it): finish, so it comes back settled.
+                wakeAnimation?.end()
                 glView.onPause()
             }
         }
@@ -171,6 +193,7 @@ class OverheadWallpaperService : WallpaperService() {
             super.onDestroy()
             handler.removeCallbacks(redrawEveryMinute)
             unlockAnimation?.cancel()
+            wakeAnimation?.cancel()
             store.unregisterListener(locationChanged)
             clouds.unregisterListener(cloudsChanged)
             zoom.unregisterListener(zoomChanged)
@@ -188,14 +211,33 @@ class OverheadWallpaperService : WallpaperService() {
                 duration = UNLOCK_ANIMATION_MILLIS
                 interpolator = DecelerateInterpolator(2f)
                 addUpdateListener { setScreenZoom(it.animatedValue as Float) }
-                // Lighter frames while moving; the final still frame is drawn at full resolution.
-                doOnStart { renderer.reducedResolution = true }
-                doOnEnd {
-                    renderer.reducedResolution = false
-                    glView.requestRender()
-                }
+                doOnStart { unlocking = true; updateResolution() }
+                doOnEnd { unlocking = false; updateResolution() }
                 start()
             }
+        }
+
+        private fun startPendingWake() {
+            if (!wakePending) return
+            wakePending = false
+            wakeAnimation = ValueAnimator.ofFloat(0f, 1f).apply {
+                duration = WAKE_ANIMATION_MILLIS
+                // Linear: WakeAnimation eases each part of the effect on its own.
+                interpolator = LinearInterpolator()
+                addUpdateListener {
+                    renderer.wake = it.animatedValue as Float
+                    glView.requestRender()
+                }
+                doOnStart { waking = true; updateResolution() }
+                doOnEnd { waking = false; updateResolution() }
+                start()
+            }
+        }
+
+        /** Lighter frames while anything moves; the final still frame is drawn at full resolution. */
+        private fun updateResolution() {
+            renderer.reducedResolution = unlocking || waking
+            glView.requestRender()
         }
 
         private fun setScreenZoom(value: Float) {
@@ -239,6 +281,7 @@ class OverheadWallpaperService : WallpaperService() {
         const val MAX_PAN_DEGREES = 8.0
 
         const val UNLOCK_ANIMATION_MILLIS = 1200L
+        const val WAKE_ANIMATION_MILLIS = 1600L
 
         // How much smaller the globe gets when the launcher fully zooms the wallpaper out.
         const val LAUNCHER_ZOOM_OUT = 0.08f

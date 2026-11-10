@@ -30,6 +30,8 @@
     <string name="preview_home">Preview: home screen</string>
     <string name="preview_lock">Preview: lock screen</string>
     <string name="keep_milky_way_in_view">Keep the Milky Way in view</string>
+    <string name="screen_on_animation">Animate when the screen turns on</string>
+    <string name="screen_on_animation_detail">The globe turns to your place as the sunlight comes up and city lights switch on.</string>
     <string name="keep_milky_way_in_view_detail">Off: the real sky behind the Earth, where the Milky Way passes by part of the day. On: the sky is turned so it\'s always there.</string>
 
     <string name="clouds_waiting">Live clouds will appear after the first download.</string>
